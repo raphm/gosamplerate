@@ -68,11 +68,13 @@ const (
 func New(converterType int, channels int, bufferLen int) (Src, error) {
 	cConverter := C.int(converterType)
 	cChannels := C.int(channels)
-	var cErr *C.int
+	var cErr C.int
 
-	src_state := C.src_new(cConverter, cChannels, cErr)
+	src_state := C.src_new(cConverter, cChannels, &cErr)
 	if src_state == nil {
-		return Src{}, errors.New("Could not initialize samplerate converter object")
+		errMsg := fmt.Sprintf("Could not initialize samplerate converter object: %s",
+			Error(int(cErr)))
+		return Src{}, errors.New(errMsg)
 	}
 
 	inputBuffer := make([]C.float, bufferLen)
